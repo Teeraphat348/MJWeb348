@@ -37,23 +37,31 @@ export const SORT_FIELDS = ["title", "price", "stock"] as const;
 
 export type SearchQuery = {
   q: string;
+  category: string; // เพิ่ม property นี้เข้ามาเพื่อแก้ Error
   limit: number;
   sortBy: (typeof SORT_FIELDS)[number];
 };
 
 export const defaultQuery: SearchQuery = {
   q: "",
+  category: "",     // เพิ่มค่าเริ่มต้น
   limit: 10,
   sortBy: "title",
 };
 
 export function buildProductUrl(query: SearchQuery): string {
   const params = new URLSearchParams();
-  params.set("q", query.q);
   params.set("limit", String(query.limit));
   params.set("sortBy", query.sortBy);
   params.set("order", "asc");
   params.set("select", "title,price,stock,category,thumbnail");
+
+  // ถ้ามีการเลือกหมวดหมู่ ให้ยิง API ไปที่ endpoint หมวดหมู่โดยตรง
+  if (query.category) {
+    return `${API_BASE}/products/category/${query.category}?${params.toString()}`;
+  }
+  
+  params.set("q", query.q);
   return `${API_BASE}/products/search?${params.toString()}`;
 }
 
